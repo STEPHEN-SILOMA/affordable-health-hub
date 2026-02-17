@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,27 +9,43 @@ import {
   ChevronRight, TrendingUp, Calendar, Phone, Home, ClipboardList, Menu, X
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { getClaimsByUser } from "@/lib/mock-claims";
+import { getPaymentsByUser } from "@/lib/mock-payments";
 
 const sidebarLinks = [
-  { icon: Home, label: "Overview", active: true },
-  { icon: Heart, label: "My Coverage" },
-  { icon: ClipboardList, label: "Claims" },
-  { icon: CreditCard, label: "Payments" },
-  { icon: User, label: "Profile" },
-  { icon: Settings, label: "Settings" },
+  { icon: Home, label: "Overview", href: "/dashboard", active: true },
+  { icon: Heart, label: "My Coverage", href: "/dashboard" },
+  { icon: ClipboardList, label: "Claims", href: "/claims" },
+  { icon: CreditCard, label: "Payments", href: "/payments" },
+  { icon: User, label: "Profile", href: "/dashboard" },
+  { icon: Settings, label: "Settings", href: "/dashboard" },
 ];
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const claims = user ? getClaimsByUser(user.id) : [];
+  const payments = user ? getPaymentsByUser(user.id) : [];
+  const pendingClaims = claims.filter((c) => c.status === "Pending").length;
+  const totalPaid = payments.filter((p) => p.status === "Completed").reduce((s, p) => s + p.amount, 0);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const displayName = user ? user.firstName : "Guest";
+  const memberSince = user?.memberSince || "Today";
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-foreground/20 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform lg:transform-none ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-2">
@@ -44,8 +60,9 @@ const Dashboard = () => {
         </div>
         <nav className="p-3 space-y-1">
           {sidebarLinks.map((link) => (
-            <button
+            <Link
               key={link.label}
+              to={link.href}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 link.active
                   ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
@@ -54,36 +71,32 @@ const Dashboard = () => {
             >
               <link.icon className="w-4 h-4" />
               {link.label}
-            </button>
+            </Link>
           ))}
         </nav>
         <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-sidebar-border">
-          <Link to="/">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </Link>
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 min-w-0">
-        {/* Top bar */}
         <header className="h-16 border-b border-border bg-card flex items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden">
               <Menu className="w-5 h-5 text-foreground" />
             </button>
             <div>
-              <h1 className="font-heading font-bold text-foreground">Jambo, Wanjiku 👋</h1>
-              <p className="text-xs text-muted-foreground">Member since March 2025</p>
+              <h1 className="font-heading font-bold text-foreground">Jambo, {displayName} 👋</h1>
+              <p className="text-xs text-muted-foreground">Member since {memberSince}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
               <Bell className="w-5 h-5 text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
+              {pendingClaims > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />}
             </button>
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <User className="w-4 h-4 text-primary" />
@@ -92,13 +105,12 @@ const Dashboard = () => {
         </header>
 
         <div className="p-4 lg:p-8 space-y-6">
-          {/* Stats row */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: "Plan", value: "Msingi", sub: "Active", icon: Shield, color: "text-primary" },
+              { label: "Plan", value: user?.plan || "Msingi", sub: "Active", icon: Shield, color: "text-primary" },
               { label: "Cover Balance", value: "KES 42,500", sub: "of 50,000", icon: Heart, color: "text-success" },
-              { label: "Next Payment", value: "KES 1,500", sub: "Due 1st Mar", icon: CreditCard, color: "text-accent" },
-              { label: "Claims Filed", value: "3", sub: "1 pending", icon: FileText, color: "text-info" },
+              { label: "Total Paid", value: `KES ${totalPaid.toLocaleString()}`, sub: `${payments.length} payments`, icon: CreditCard, color: "text-accent" },
+              { label: "Claims Filed", value: String(claims.length), sub: `${pendingClaims} pending`, icon: FileText, color: "text-info" },
             ].map((s, i) => (
               <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
                 <Card className="shadow-card border-border">
@@ -115,7 +127,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Cover progress + Quick actions */}
           <div className="grid lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-2 shadow-card border-border">
               <CardHeader>
@@ -145,36 +156,33 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { icon: FileText, label: "File a Claim", color: "bg-primary/10 text-primary" },
-                  { icon: CreditCard, label: "Make Payment", color: "bg-accent/10 text-accent" },
-                  { icon: Phone, label: "Call Support", color: "bg-info/10 text-info" },
-                  { icon: Calendar, label: "Book Appointment", color: "bg-success/10 text-success" },
+                  { icon: FileText, label: "File a Claim", color: "bg-primary/10 text-primary", href: "/claims" },
+                  { icon: CreditCard, label: "Make Payment", color: "bg-accent/10 text-accent", href: "/payments" },
+                  { icon: Phone, label: "Call Support", color: "bg-info/10 text-info", href: "#" },
+                  { icon: Calendar, label: "Book Appointment", color: "bg-success/10 text-success", href: "#" },
                 ].map((a) => (
-                  <button key={a.label} className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors group">
+                  <Link key={a.label} to={a.href} className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors group">
                     <div className={`w-9 h-9 rounded-lg ${a.color} flex items-center justify-center`}>
                       <a.icon className="w-4 h-4" />
                     </div>
                     <span className="flex-1 text-sm text-foreground font-medium text-left">{a.label}</span>
                     <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  </button>
+                  </Link>
                 ))}
               </CardContent>
             </Card>
           </div>
 
-          {/* Recent claims */}
           <Card className="shadow-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="font-heading text-lg">Recent Claims</CardTitle>
-              <Button variant="ghost" size="sm" className="text-primary">View All</Button>
+              <Link to="/claims">
+                <Button variant="ghost" size="sm" className="text-primary">View All</Button>
+              </Link>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {[
-                  { id: "CLM-2025-0412", hospital: "Kenyatta National Hospital", amount: "KES 3,200", date: "Feb 12, 2026", status: "Approved", statusColor: "bg-success/10 text-success" },
-                  { id: "CLM-2025-0398", hospital: "Nairobi Women's Hospital", amount: "KES 7,500", date: "Jan 28, 2026", status: "Pending", statusColor: "bg-warning/10 text-warning" },
-                  { id: "CLM-2025-0371", hospital: "Avenue Healthcare", amount: "KES 1,800", date: "Jan 15, 2026", status: "Approved", statusColor: "bg-success/10 text-success" },
-                ].map((c) => (
+                {claims.slice(0, 3).map((c) => (
                   <div key={c.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -186,16 +194,16 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-sm font-medium text-foreground hidden sm:block">{c.amount}</span>
-                      <Badge variant="secondary" className={c.statusColor}>{c.status}</Badge>
+                      <span className="text-sm font-medium text-foreground hidden sm:block">KES {c.amount.toLocaleString()}</span>
+                      <Badge variant="secondary" className={c.status === "Approved" ? "bg-success/10 text-success" : c.status === "Pending" ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"}>{c.status}</Badge>
                     </div>
                   </div>
                 ))}
+                {claims.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No claims yet</p>}
               </div>
             </CardContent>
           </Card>
 
-          {/* Payment reminder */}
           <Card className="bg-gradient-accent text-accent-foreground shadow-card border-0">
             <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -207,9 +215,11 @@ const Dashboard = () => {
                   <p className="text-sm text-accent-foreground/80">KES 1,500 due on March 1st. Pay via M-Pesa to keep your cover active.</p>
                 </div>
               </div>
-              <Button className="bg-accent-foreground/20 hover:bg-accent-foreground/30 text-accent-foreground border-0 flex-shrink-0">
-                Pay Now via M-Pesa
-              </Button>
+              <Link to="/payments">
+                <Button className="bg-accent-foreground/20 hover:bg-accent-foreground/30 text-accent-foreground border-0 flex-shrink-0">
+                  Pay Now via M-Pesa
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
