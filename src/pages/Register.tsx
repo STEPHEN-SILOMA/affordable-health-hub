@@ -1,38 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Shield, ArrowRight, ArrowLeft, User, Phone, CreditCard, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 
 const steps = ["Personal Info", "Contact", "Choose Plan", "Confirm"];
 
 const Register = () => {
   const [step, setStep] = useState(0);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [county, setCounty] = useState("");
-  const [password, setPassword] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState("Msingi");
-  const { signup } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleFinish = () => {
-    try {
-      signup({ firstName, lastName, email, phone, county, plan: selectedPlan }, password);
-      toast({ title: "Welcome to AfyaConnect!", description: "Your account has been created." });
-      navigate("/dashboard");
-    } catch (err: any) {
-      toast({ title: "Registration failed", description: err.message, variant: "destructive" });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -86,10 +64,10 @@ const Register = () => {
                   <p className="text-sm text-muted-foreground mb-6">Enter your details as they appear on your ID.</p>
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div><Label>First Name</Label><Input placeholder="Wanjiku" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
-                      <div><Label>Last Name</Label><Input placeholder="Kamau" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
+                      <div><Label>First Name</Label><Input placeholder="Wanjiku" /></div>
+                      <div><Label>Last Name</Label><Input placeholder="Kamau" /></div>
                     </div>
-                    <div><Label>Password</Label><Input placeholder="Create a password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+                    <div><Label>National ID Number</Label><Input placeholder="12345678" /></div>
                     <div><Label>Date of Birth</Label><Input type="date" /></div>
                   </div>
                 </div>
@@ -99,9 +77,9 @@ const Register = () => {
                   <h2 className="font-heading text-2xl font-bold text-foreground mb-1">Contact Info</h2>
                   <p className="text-sm text-muted-foreground mb-6">We'll send your digital card via SMS.</p>
                   <div className="space-y-4">
-                    <div><Label>M-Pesa Phone Number</Label><Input placeholder="0712 345 678" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
-                    <div><Label>Email</Label><Input placeholder="wanjiku@email.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                    <div><Label>County</Label><Input placeholder="Nairobi" value={county} onChange={(e) => setCounty(e.target.value)} /></div>
+                    <div><Label>M-Pesa Phone Number</Label><Input placeholder="0712 345 678" /></div>
+                    <div><Label>Email (Optional)</Label><Input placeholder="wanjiku@email.com" type="email" /></div>
+                    <div><Label>County</Label><Input placeholder="Nairobi" /></div>
                   </div>
                 </div>
               )}
@@ -115,7 +93,7 @@ const Register = () => {
                       { name: "Familia", price: "KES 1,500/mo", desc: "Family cover with dental & maternity" },
                       { name: "Chama", price: "KES 1,000/member/mo", desc: "Group rates for 10+ members" },
                     ].map((p, i) => (
-                      <Card key={p.name} onClick={() => setSelectedPlan(p.name)} className={`cursor-pointer border-2 transition-all ${selectedPlan === p.name ? "border-primary shadow-card" : "border-border hover:border-primary/30"}`}>
+                      <Card key={p.name} className={`cursor-pointer border-2 transition-all ${i === 0 ? "border-primary shadow-card" : "border-border hover:border-primary/30"}`}>
                         <CardContent className="p-4 flex items-center justify-between">
                           <div>
                             <p className="font-heading font-semibold text-foreground">{p.name}</p>
@@ -135,10 +113,9 @@ const Register = () => {
                   <Card className="shadow-card border-border mb-6">
                     <CardContent className="p-4 space-y-3">
                       {[
-                        { label: "Name", value: `${firstName || "—"} ${lastName || "—"}` },
-                        { label: "Plan", value: selectedPlan },
-                        { label: "M-Pesa", value: phone || "—" },
-                        { label: "Email", value: email || "—" },
+                        { label: "Name", value: "Wanjiku Kamau" },
+                        { label: "Plan", value: "Msingi - KES 50/day" },
+                        { label: "M-Pesa", value: "0712 345 678" },
                       ].map((r) => (
                         <div key={r.label} className="flex justify-between text-sm">
                           <span className="text-muted-foreground">{r.label}</span>
@@ -151,7 +128,7 @@ const Register = () => {
                     <Phone className="w-5 h-5 text-success mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-foreground">M-Pesa STK Push</p>
-                      <p className="text-xs text-muted-foreground">You'll receive a prompt on {phone || "your phone"} to complete registration.</p>
+                      <p className="text-xs text-muted-foreground">You'll receive a prompt on 0712 345 678 to pay KES 50.</p>
                     </div>
                   </div>
                 </div>
@@ -168,14 +145,16 @@ const Register = () => {
                 Next <ArrowRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button onClick={handleFinish} className="bg-gradient-accent text-accent-foreground gap-1">
-                <CreditCard className="w-4 h-4" /> Create Account
-              </Button>
+              <Link to="/dashboard">
+                <Button className="bg-gradient-accent text-accent-foreground gap-1">
+                  <CreditCard className="w-4 h-4" /> Pay with M-Pesa
+                </Button>
+              </Link>
             )}
           </div>
 
           <p className="text-center text-xs text-muted-foreground mt-6">
-            Already have an account? <Link to="/login" className="text-primary hover:underline">Log in</Link>
+            Already have an account? <Link to="/dashboard" className="text-primary hover:underline">Log in</Link>
           </p>
         </div>
       </div>
