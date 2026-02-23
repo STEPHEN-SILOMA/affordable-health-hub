@@ -76,7 +76,7 @@ const Dashboard = () => {
               <Menu className="w-5 h-5 text-foreground" />
             </button>
             <div>
-              <h1 className="font-heading font-bold text-foreground">Jambo, Wanjiku 👋</h1>
+              <h1 className="font-heading font-bold text-foreground">Jambo, Stephen 👋</h1>
               <p className="text-xs text-muted-foreground">Member since March 2025</p>
             </div>
           </div>

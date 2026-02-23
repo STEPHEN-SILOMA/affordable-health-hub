@@ -64,8 +64,8 @@ const Register = () => {
                   <p className="text-sm text-muted-foreground mb-6">Enter your details as they appear on your ID.</p>
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div><Label>First Name</Label><Input placeholder="Wanjiku" /></div>
-                      <div><Label>Last Name</Label><Input placeholder="Kamau" /></div>
+                      <div><Label>First Name</Label><Input placeholder="Stephen" /></div>
+                      <div><Label>Last Name</Label><Input placeholder="Siloma" /></div>
                     </div>
                     <div><Label>National ID Number</Label><Input placeholder="12345678" /></div>
                     <div><Label>Date of Birth</Label><Input type="date" /></div>
@@ -78,7 +78,7 @@ const Register = () => {
                   <p className="text-sm text-muted-foreground mb-6">We'll send your digital card via SMS.</p>
                   <div className="space-y-4">
                     <div><Label>M-Pesa Phone Number</Label><Input placeholder="0712 345 678" /></div>
-                    <div><Label>Email (Optional)</Label><Input placeholder="wanjiku@email.com" type="email" /></div>
+                    <div><Label>Email (Optional)</Label><Input placeholder="stephensilo32@email.com" type="email" /></div>
                     <div><Label>County</Label><Input placeholder="Nairobi" /></div>
                   </div>
                 </div>
@@ -113,9 +113,9 @@ const Register = () => {
                   <Card className="shadow-card border-border mb-6">
                     <CardContent className="p-4 space-y-3">
                       {[
-                        { label: "Name", value: "Wanjiku Kamau" },
+                        { label: "Name", value: "Stephen Siloma" },
                         { label: "Plan", value: "Msingi - KES 50/day" },
-                        { label: "M-Pesa", value: "0712 345 678" },
+                        { label: "M-Pesa", value: "0791 617 409" },
                       ].map((r) => (
                         <div key={r.label} className="flex justify-between text-sm">
                           <span className="text-muted-foreground">{r.label}</span>
@@ -128,7 +128,7 @@ const Register = () => {
                     <Phone className="w-5 h-5 text-success mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-foreground">M-Pesa STK Push</p>
-                      <p className="text-xs text-muted-foreground">You'll receive a prompt on 0712 345 678 to pay KES 50.</p>
+                      <p className="text-xs text-muted-foreground">You'll receive a prompt on 0791 617 409 to pay KES 50.</p>
                     </div>
                   </div>
                 </div>
