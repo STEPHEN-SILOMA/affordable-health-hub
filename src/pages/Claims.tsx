@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, FileText, Calendar, DollarSign, Clock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import NavLink from "@/components/NavLink";
+import { NavLink } from "@/components/NavLink";
 
 interface Claim {
   id: string;
@@ -134,9 +134,9 @@ const Claims = () => {
             <div className="flex items-center gap-8">
               <span className="font-heading font-bold text-lg">AfyaConnect</span>
               <div className="hidden sm:flex gap-1">
-                <NavLink href="/dashboard" label="Dashboard" />
-                <NavLink href="/claims" label="Claims" active />
-                <NavLink href="/payments" label="Payments" />
+                <NavLink to="/dashboard">Dashboard</NavLink>
+                <NavLink to="/claims" activeClassName="font-bold">Claims</NavLink>
+                <NavLink to="/payments">Payments</NavLink>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => {
